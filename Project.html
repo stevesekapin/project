@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #191818;
+        }
+        .quiz-container {
+            background: rgb(194, 191, 191);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .question {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 10px 0;
+        }
+        .options button {
+            padding: 10px 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .options button.correct {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        .options button.incorrect {
+            background-color: #F44336; /* Red */
+            color: white;
+        }
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        #timer {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #score {
+            margin-top: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        .results {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>Quiz App</h1>
+    <div id="timer">Time left: <span id="time">30</span> seconds</div>
+    <div id="quiz"></div>
+    <button id="next" style="display: none;">Next Question</button>
+    <div id="score"></div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "What is the capital of France?",
+            options: ["Berlin", "Madrid", "Paris", "Rome"],
+            answer: "Paris"
+        },
+        {
+            question: "What is 2 + 2?",
+            options: ["3", "4", "5", "6"],
+            answer: "4"
+        },
+        {
+            question: "What is the largest planet in our Solar System?",
+            options: ["Earth", "Mars", "Jupiter", "Saturn"],
+            answer: "Jupiter"
+        },
+        {
+            question: "Which ocean is the largest?",
+            options: ["Atlantic", "Indian", "Arctic", "Pacific"],
+            answer: "Pacific"
+        },
+        {
+            question: "What is the main ingredient in guacamole?",
+            options: ["Tomato", "Avocado", "Pepper", "Onion"],
+            answer: "Avocado"
+        },
+        {
+            question: "What is the hardest natural substance on Earth?",
+            options: ["Gold", "Diamond", "Iron", "Graphite"],
+            answer: "Diamond"
+        },
+        {
+            question: "Which country is known as the Land of the Rising Sun?",
+            options: ["China", "Japan", "Thailand", "South Korea"],
+            answer: "Japan"
+        },
+        {
+            question: "What is the chemical symbol for gold?",
+            options: ["Au", "Ag", "Pb", "Fe"],
+            answer: "Au"
+        },
+        {
+            question: "Which planet is known as the Red Planet?",
+            options: ["Earth", "Venus", "Mars", "Jupiter"],
+            answer: "Mars"
+        },
+        {
+            question: "Who wrote 'Romeo and Juliet'?",
+            options: ["Charles Dickens", "Jane Austen", "Mark Twain", "William Shakespeare"],
+            answer: "William Shakespeare"
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 30;
+    const incorrectAnswers = [];
+
+    function startQuiz() {
+        showQuestion();
+        startTimer();
+    }
+
+    function showQuestion() {
+        const questionContainer = document.getElementById("quiz");
+        questionContainer.innerHTML = "";
+
+        const currentQuestion = questions[currentQuestionIndex];
+        const questionElement = document.createElement("div");
+        questionElement.classList.add("question");
+        questionElement.innerHTML = `<h2>${currentQuestion.question}</h2>`;
+
+        const optionsList = document.createElement("ul");
+        optionsList.classList.add("options");
+
+        currentQuestion.options.forEach(option => {
+            const listItem = document.createElement("li");
+            listItem.innerHTML = `<button onclick="checkAnswer('${option}', '${currentQuestion.answer}')">${option}</button>`;
+            optionsList.appendChild(listItem);
+        });
+
+        questionContainer.appendChild(questionElement);
+        questionContainer.appendChild(optionsList);
+    }
+
+    function checkAnswer(selectedOption, correctAnswer) {
+        const buttons = document.querySelectorAll(".options button");
+        
+        buttons.forEach(button => {
+            if (button.innerText === correctAnswer) {
+                button.classList.add("correct");
+            } else if (button.innerText === selectedOption) {
+                button.classList.add("incorrect");
+            }
+            button.disabled = true; // Disable all buttons after an answer is selected
+        });
+
+        if (selectedOption === correctAnswer) {
+            score++;
+        } else {
+            incorrectAnswers.push({
+                question: questions[currentQuestionIndex].question,
+                correctAnswer: correctAnswer,
+                selectedAnswer: selectedOption
+            });
+        }
+
+        document.getElementById("next").style.display = "block";
+        clearInterval(timer); // Stop timer on answer
+    }
+
+    document.getElementById("next").addEventListener("click", () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+            document.getElementById("next").style.display = "none";
+            resetTimer();
+        } else {
+            endQuiz();
+        }
+    });
+
+    function startTimer() {
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById("time").innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                endQuiz();
+            }
+        }, 1000);
+    }
+
+    function resetTimer() {
+        clearInterval(timer);
+        timeLeft = 30;
+        document.getElementById("time").innerText = timeLeft;
+        startTimer();
+    }
+
+    function endQuiz() {
+        const quizContainer = document.getElementById("quiz");
+        quizContainer.innerHTML = `<h2>Quiz Finished!</h2><p>Your score: ${score} out of ${questions.length}</p>`;
+
+        if (incorrectAnswers.length > 0) {
+            const feedbackList = document.createElement("div");
+            feedbackList.classList.add("results");
+            feedbackList.innerHTML = "<h3>Incorrect Answers:</h3>";
+            incorrectAnswers.forEach(item => {
+                feedbackList.innerHTML += `<p>Q: ${item.question}<br>Your Answer: <span style="color: #F44336;">${item.selectedAnswer}</span><br>Correct Answer: <span style="color: #4CAF50;">${item.correctAnswer}</span></p>`;
+            });
+            quizContainer.appendChild(feedbackList);
+        }
+
+        document.getElementById("timer").style.display = "none";
+        document.getElementById("next").style.display = "none";
+    }
+
+    // Start the quiz when the page loads
+    startQuiz();
+</script>
+
+</body>
+</html>
